@@ -1,0 +1,200 @@
+object Form1: TForm1
+  Left = 355
+  Height = 511
+  Top = 167
+  Width = 574
+  Caption = 'Конструктор тестов'
+  ClientHeight = 491
+  ClientWidth = 574
+  Menu = MainMenu1
+  OnCreate = FormCreate
+  LCLVersion = '1.6.0.4'
+  object Panel1: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 574
+    Align = alTop
+    ClientHeight = 50
+    ClientWidth = 574
+    TabOrder = 0
+    object BitBtn1: TBitBtn
+      Left = 1
+      Height = 48
+      Top = 1
+      Width = 95
+      Align = alLeft
+      Caption = 'Надпись'
+      OnClick = BitBtn1Click
+      TabOrder = 0
+    end
+    object BitBtn2: TBitBtn
+      Left = 96
+      Height = 48
+      Top = 1
+      Width = 88
+      Align = alLeft
+      Caption = 'Рисунок'
+      OnClick = BitBtn2Click
+      TabOrder = 1
+    end
+    object BitBtn3: TBitBtn
+      Left = 184
+      Height = 48
+      Top = 1
+      Width = 96
+      Align = alLeft
+      Caption = 'Вариант'
+      OnClick = BitBtn3Click
+      TabOrder = 2
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Height = 50
+    Top = 441
+    Width = 574
+    Align = alBottom
+    ClientHeight = 50
+    ClientWidth = 574
+    TabOrder = 1
+    object BitBtn4: TBitBtn
+      Left = 1
+      Height = 48
+      Top = 1
+      Width = 75
+      Align = alLeft
+      Caption = 'Назад'
+      OnClick = BitBtn4Click
+      TabOrder = 0
+    end
+    object BitBtn5: TBitBtn
+      Left = 498
+      Height = 48
+      Top = 1
+      Width = 75
+      Align = alRight
+      Caption = 'Вперед'
+      OnClick = BitBtn5Click
+      TabOrder = 1
+    end
+  end
+  object GroupBox1: TGroupBox
+    Left = 0
+    Height = 391
+    Top = 50
+    Width = 574
+    Align = alClient
+    Caption = 'Вопрос '
+    ClientHeight = 371
+    ClientWidth = 570
+    TabOrder = 2
+    OnClick = GroupBox1Click
+    OnMouseEnter = GroupBox1MouseEnter
+    OnMouseLeave = GroupBox1MouseLeave
+    OnMouseMove = GroupBox1MouseMove
+    object Panel3: TPanel
+      Left = 528
+      Height = 50
+      Top = 16
+      Width = 42
+      Color = 12615680
+      ParentColor = False
+      TabOrder = 0
+      OnClick = GroupBox1Click
+    end
+    object Panel4: TPanel
+      Left = 528
+      Height = 50
+      Top = 44
+      Width = 42
+      Color = 12615680
+      ParentColor = False
+      TabOrder = 1
+      OnClick = GroupBox1Click
+    end
+  end
+  object MainMenu1: TMainMenu
+    left = 453
+    top = 23
+    object MenuItem1: TMenuItem
+      Caption = 'Файл'
+      object MenuItem3: TMenuItem
+        Caption = 'Открыть'
+        OnClick = MenuItem3Click
+      end
+      object MenuItem4: TMenuItem
+        Caption = 'Сохранить'
+        OnClick = MenuItem4Click
+      end
+    end
+    object MenuItem2: TMenuItem
+      Caption = 'Выход'
+      OnClick = MenuItem2Click
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    left = 431
+    top = 184
+    object MenuItem5: TMenuItem
+      Caption = 'Наименование'
+      OnClick = MenuItem5Click
+    end
+    object MenuItem8: TMenuItem
+      Caption = 'Шрифт'
+      OnClick = MenuItem8Click
+    end
+    object MenuItem6: TMenuItem
+      Caption = 'Удалить'
+      OnClick = MenuItem6Click
+    end
+  end
+  object FontDialog1: TFontDialog
+    MinFontSize = 0
+    MaxFontSize = 0
+    Options = [fdTrueTypeOnly, fdEffects, fdNoFaceSel]
+    PreviewText = 'Я помню чудное мнгновенье...'
+    left = 369
+    top = 18
+  end
+  object OpenPictureDialog1: TOpenPictureDialog
+    left = 449
+    top = 114
+  end
+  object PopupMenu2: TPopupMenu
+    left = 439
+    top = 242
+    object MenuItem7: TMenuItem
+      Caption = 'Размер'
+      OnClick = MenuItem7Click
+    end
+    object MenuItem10: TMenuItem
+      Caption = 'Удалить'
+      OnClick = MenuItem10Click
+    end
+  end
+  object PopupMenu3: TPopupMenu
+    left = 427
+    top = 305
+    object MenuItem9: TMenuItem
+      Caption = 'Надпись'
+      OnClick = MenuItem9Click
+    end
+    object MenuItem11: TMenuItem
+      Caption = 'Шрифт'
+      OnClick = MenuItem11Click
+    end
+    object MenuItem12: TMenuItem
+      Caption = 'Удалить'
+      OnClick = MenuItem12Click
+    end
+  end
+  object SaveDialog1: TSaveDialog
+    left = 363
+    top = 174
+  end
+  object OpenDialog1: TOpenDialog
+    left = 395
+    top = 300
+  end
+end

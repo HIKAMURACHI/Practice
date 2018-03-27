@@ -1,0 +1,4 @@
+#TestPage#
+Label:Top=61 Left=104  FontStyle= FontCharset=1 FontColor=536870912 FontSize=0 FontName="default" Caption="asd"
+Answer:Top=210 Left=196 Checked=1  FontStyle= FontCharset=1 FontColor=536870912 FontSize=0 FontName="default" Caption="a"
+Answer:Top=141 Left=174 Checked=0  FontStyle= FontCharset=1 FontColor=536870912 FontSize=0 FontName="default" Caption="b"
