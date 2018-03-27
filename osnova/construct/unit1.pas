@@ -1,0 +1,502 @@
+unit Unit1;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
+  Buttons, Menus, StdCtrls, ExtDlgs,base64;
+
+type
+
+  { TForm1 }
+
+  TForm1 = class(TForm)
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
+    BitBtn4: TBitBtn;
+    BitBtn5: TBitBtn;
+    FontDialog1: TFontDialog;
+    GroupBox1: TGroupBox;
+    MainMenu1: TMainMenu;
+    MenuItem1: TMenuItem;
+    MenuItem10: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
+    MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem6: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem8: TMenuItem;
+    MenuItem9: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    OpenPictureDialog1: TOpenPictureDialog;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    Panel4: TPanel;
+    PopupMenu1: TPopupMenu;
+    PopupMenu2: TPopupMenu;
+    PopupMenu3: TPopupMenu;
+    SaveDialog1: TSaveDialog;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure BitBtn4Click(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure GroupBox1Click(Sender: TObject);
+    procedure GroupBox1MouseEnter(Sender: TObject);
+    procedure GroupBox1MouseLeave(Sender: TObject);
+    procedure GroupBox1MouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure LabelClick(Sender: TObject);
+    procedure ImageClick(Sender: TObject);
+    procedure AnswerClick(Sender: TObject);
+    procedure MenuItem10Click(Sender: TObject);
+    procedure MenuItem11Click(Sender: TObject);
+    procedure MenuItem12Click(Sender: TObject);
+    procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem3Click(Sender: TObject);
+    procedure MenuItem4Click(Sender: TObject);
+    procedure MenuItem5Click(Sender: TObject);
+    procedure MenuItem6Click(Sender: TObject);
+    procedure MenuItem7Click(Sender: TObject);
+    procedure MenuItem8Click(Sender: TObject);
+    procedure MenuItem9Click(Sender: TObject);
+    procedure UpdateArrays;
+    procedure ShowVopr;
+    function FontToStr(t:TFont):string;
+  private
+    { private declarations }
+  public
+    { public declarations }
+  end;
+
+type TestForm=record
+   L,I,A:array of string;
+end;
+var
+  Form1: TForm1;
+  Lbl:array of TLabel;
+  Image:array of TImage;
+  Answer:array of TCheckBox;
+  AElement:string='';
+  VCount:word=0;
+  Mx,My:integer;
+  PopupLabel:integer=0;
+  PopupImage:integer=0;
+  PopupAnswer:integer=0;
+  Test:array of TestForm;
+  CurrentTest:integer=0;
+implementation
+
+{$R *.lfm}
+
+{ TForm1 }
+
+procedure TForm1.BitBtn1Click(Sender: TObject);
+begin
+  AElement:='TLabel';
+end;
+
+procedure TForm1.BitBtn2Click(Sender: TObject);
+begin
+  AElement:='Timage';
+end;
+
+procedure TForm1.BitBtn3Click(Sender: TObject);
+begin
+  AElement:='TCheckBox';
+end;
+
+procedure TForm1.BitBtn4Click(Sender: TObject);
+begin
+  UpdateArrays;
+  if CurrentTest>0 then CurrentTest:=CurrentTest-1 else ShowMessage('Это первый лист');
+  ShowVopr;
+end;
+
+procedure TForm1.BitBtn5Click(Sender: TObject);
+begin
+  UpdateArrays;
+  CurrentTest:=CurrentTest+1;
+  ShowVopr;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Panel3.Top:=0;
+  Panel3.Width:=2;
+  panel3.Visible:=false;
+  Panel4.Left:=0;
+  Panel4.Height:=2;
+  panel4.Visible:=false;
+end;
+
+procedure TForm1.LabelClick(Sender: TObject);
+begin
+  PopupLabel:=(Sender as TLabel).Tag;
+  PopupMenu1.PopUp;
+end;
+
+procedure TForm1.ImageClick(Sender: TObject);
+begin
+  PopupImage:=(Sender as TImage).Tag;
+  PopupMenu2.PopUp;
+end;
+
+procedure TForm1.AnswerClick(Sender: TObject);
+begin
+
+  PopupAnswer:=(Sender as TCheckBox).Tag;
+  PopupMenu3.PopUp;
+end;
+
+procedure TForm1.MenuItem10Click(Sender: TObject);
+begin
+  Image[PopupImage].Free;
+end;
+
+procedure TForm1.MenuItem11Click(Sender: TObject);
+begin
+  if FontDialog1.Execute then Answer[PopupAnswer].Font:=FontDialog1.Font;
+end;
+
+procedure TForm1.MenuItem12Click(Sender: TObject);
+begin
+  Answer[PopupAnswer].Free;
+end;
+
+
+procedure TForm1.MenuItem2Click(Sender: TObject);
+begin
+  if QuestionDlg ('Внимание','Вы действительно хотите выйти?',mtCustom,[mrYes,'Да', mrNo, 'Нет', 'IsDefault'],'')=mrYes
+    then Application.Terminate;
+end;
+
+procedure TForm1.MenuItem3Click(Sender: TObject);
+var
+  f:Text;
+  i,j:integer;
+  s:string;
+begin
+  if OpenDialog1.Execute then begin
+     AssignFile(f,OpenDialog1.FileName);
+     reset(f);
+     i:=0;
+     SetLength(Test,0);
+     while not eof(f) do begin
+        readln(f,s);
+        if s='#TestPage#' then begin i:=i+1; SetLength(Test,i);end;
+        case copy(s,1,pos(':',s)) of
+          'Label:':begin
+                     SetLength(Test[i-1].L,Length(Test[i-1].L)+1);
+                     Test[i-1].L[Length(Test[i-1].L)-1]:=s;
+                   end;
+          'Image:':begin
+                     SetLength(Test[i-1].I,Length(Test[i-1].I)+1);
+                     Test[i-1].I[Length(Test[i-1].I)-1]:=s;
+                   end;
+          'Answer:':begin
+                     SetLength(Test[i-1].A,Length(Test[i-1].A)+1);
+                     Test[i-1].A[Length(Test[i-1].A)-1]:=s;
+                   end;
+        end;
+     end;
+     CloseFile(f);
+     CurrentTest:=0;
+     ShowVopr;
+  end;
+end;
+
+procedure TForm1.MenuItem4Click(Sender: TObject);
+var
+  f:Text;
+  i,j:integer;
+begin
+  if SaveDialog1.Execute then begin
+    UpdateArrays;
+    if FileExistsUTF8(SaveDialog1.FileName) then begin
+      i:=0;
+      while FileExistsUTF8(SaveDialog1.FileName+'_old'+inttostr(i)) do i:=i+1;
+      RenameFileUTF8(SaveDialog1.FileName,SaveDialog1.FileName+'_old'+inttostr(i));
+    end;
+    AssignFile(f,SaveDialog1.FileName);
+    rewrite(f);
+    for i:=0 to length(Test)-1 do begin
+      writeln(f,'#TestPage#');
+      for j:=0 to Length(Test[i].L)-1 do writeln(f,Test[i].L[j]);
+      for j:=0 to Length(Test[i].I)-1 do writeln(f,Test[i].I[j]);
+      for j:=0 to Length(Test[i].A)-1 do writeln(f,Test[i].A[j]);
+    end;
+    CloseFile(f);
+    ShowMessage('Сохранено!');
+  end;
+end;
+
+procedure TForm1.MenuItem5Click(Sender: TObject);
+begin
+  Lbl[PopupLabel].Caption:=InputBox('Введите текст','',Lbl[PopupLabel].Caption);
+end;
+
+procedure TForm1.MenuItem6Click(Sender: TObject);
+begin
+  Lbl[PopupLabel].Free;
+end;
+
+procedure TForm1.MenuItem7Click(Sender: TObject);
+var
+  s:string;
+  x,y,z:integer;
+begin
+  s:=InputBox('Введите новые размеры Ш В','',inttostr(Image[PopupImage].Width)+' '+inttostr(Image[PopupImage].Height));
+  Val(copy(s,1,pos(' ',s)-1),x,z);
+  if (z<>0) or (x<5) or (x>Self.Width) then ShowMessage('Введена некорректная ширина') else begin
+    Val(copy(s,pos(' ',s)+1,length(s)),y,z);
+    if (z<>0) or (y<5) or (y>Self.Height) then ShowMessage('Введена некорректная высота') else begin
+      Image[PopupImage].Width:=x;
+      Image[PopupImage].Height:=y;
+    end;
+  end;
+end;
+
+function TForm1.FontToStr(t:TFont):string;
+begin
+  Result:=' FontStyle=';
+  if fsBold in t.Style then Result:=Result+'fsBold';
+  if fsUnderline in t.Style then Result:=Result+'fsUnderline';
+  if fsStrikeOut in t.Style then Result:=Result+'fsStrikeOut';
+  if fsItalic in t.Style then Result:=Result+'fsItalic';
+  Result:=Result+' FontCharset='+inttostr(t.CharSet)+
+                 ' FontColor='+inttostr(t.Color)+
+                 ' FontSize='+IntToStr(t.Size)+
+                 ' FontName="'+t.Name+'"';
+
+end;
+
+procedure TForm1.MenuItem8Click(Sender: TObject);
+var
+  i:integer;
+begin
+  if FontDialog1.Execute then Lbl[PopupLabel].Font:=FontDialog1.Font;
+end;
+
+procedure TForm1.MenuItem9Click(Sender: TObject);
+begin
+  Answer[PopupAnswer].Caption:=InputBox('Введите текст','',Answer[PopupAnswer].Caption);
+end;
+
+
+procedure TForm1.GroupBox1Click(Sender: TObject);
+var
+  i:integer;
+begin
+  case AElement of
+    'TLabel':begin
+      i:=length(Lbl);
+      SetLength(Lbl,i+1);
+      Lbl[i]:=TLabel.Create(Self);
+      Lbl[i].Parent:=GroupBox1;
+      Lbl[i].Caption:='Текст '+IntToStr(i+1);
+      Lbl[i].Top:=My;
+      Lbl[i].Left:=Mx;
+      Lbl[i].OnClick:=@LabelClick;
+      Lbl[i].Tag:=i;
+      Lbl[i].PopupMenu:=PopupMenu1;
+    end;
+    'Timage':begin
+      if OpenPictureDialog1.Execute then begin
+        i:=length(Image);
+        SetLength(Image,i+1);
+        Image[i]:=TImage.Create(Self);
+        Image[i].Parent:=GroupBox1;
+        Image[i].Top:=My;
+        Image[i].Left:=Mx;
+        Image[i].Proportional:=true;
+        Image[i].Picture.LoadFromFile(OpenPictureDialog1.FileName);
+        Image[i].OnClick:=@ImageClick;
+        Image[i].PopupMenu:=PopupMenu2;
+        Image[i].Tag:=i;
+      end;
+    end;
+    'TCheckBox':begin
+        i:=length(Answer);
+        SetLength(Answer,i+1);
+        Answer[i]:=TCheckBox.Create(Self);
+        Answer[i].Parent:=GroupBox1;
+        Answer[i].Top:=My;
+        Answer[i].Left:=Mx;
+        Answer[i].OnClick:=@AnswerClick;
+        Answer[i].PopupMenu:=PopupMenu3;
+        Answer[i].Checked:=false;
+        Answer[i].Tag:=i;
+        Answer[i].Caption:='Вариант ответа '+IntToStr(i+1);
+    end;
+  end;
+  AElement:='';
+end;
+
+procedure TForm1.GroupBox1MouseEnter(Sender: TObject);
+begin
+  panel3.Visible:=true;
+  panel4.Visible:=true;
+end;
+
+procedure TForm1.GroupBox1MouseLeave(Sender: TObject);
+begin
+  panel3.Visible:=false;
+  panel4.Visible:=false;
+end;
+
+procedure TForm1.GroupBox1MouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  Mx:=X;
+  My:=Y;
+  if AElement='' then begin Panel3.Visible:=false;Panel4.Visible:=false;end else begin
+    Panel3.Left:=X;
+    panel3.Height:=GroupBox1.ClientHeight;
+    Panel4.Top:=Y;
+    panel4.Width:=GroupBox1.ClientWidth;
+  end;
+end;
+
+procedure TForm1.UpdateArrays;
+var
+  i,j,k:integer;
+  s:TStringStream;
+begin
+  i:=length(Test);
+  if CurrentTest<i then i:=CurrentTest else SetLength(Test,i+1);
+  SetLength(Test[i].A,0);
+  for j:=0 to Length(Answer)-1 do
+    if Answer[j]<>nil then begin
+      k:=length(Test[i].A);
+      SetLength(Test[i].A,k+1);
+      Test[i].A[k]:='Answer:Top='+inttostr(Answer[j].Top)+
+                    ' Left='+inttostr(Answer[j].Left)+
+                    ' Checked='+inttostr(ord(Answer[j].Checked))+' '+
+                    FontToStr(Answer[j].Font)+
+                    ' Caption="'+Answer[j].Caption+'"';
+
+     end;
+
+  SetLength(Test[i].I,0);
+  for j:=0 to Length(Image)-1 do
+    if Image[j]<>nil then begin
+      k:=length(Test[i].I);
+      SetLength(Test[i].I,k+1);
+      Test[i].I[k]:='Image:Top='+inttostr(Image[j].Top)+
+                    ' Left='+inttostr(Image[j].Left)+
+                    ' Width='+inttostr(Image[j].Width)+
+                    ' Height='+inttostr(Image[j].Height);
+      s:=TStringStream.Create('');
+      Image[j].Picture.Bitmap.SaveToStream(s);
+      s.Position:=0;
+      Test[i].I[k]:=Test[i].I[k]+' Picture='+EncodeStringBase64(s.ReadString(s.Size));
+      FreeAndNil(s);
+     end;
+
+  SetLength(Test[i].L,0);
+  for j:=0 to Length(Lbl)-1 do
+    if Lbl[j]<>nil then begin
+
+      k:=length(Test[i].L);
+      SetLength(Test[i].L,k+1);
+      Test[i].L[k]:='Label:Top='+inttostr(Lbl[j].Top)+
+                    ' Left='+inttostr(Lbl[j].Left)+' '+
+                    FontToStr(Lbl[j].Font)+
+                    ' Caption="'+Lbl[j].Caption+'"';
+     end;
+end;
+
+procedure TForm1.ShowVopr;
+var
+  i,j,k:integer;
+  s:TStringStream;
+  t:string;
+
+function ReadProperty(ps,pf:string;q:string):string;
+begin
+  delete(q,1,pos(ps,q)+length(ps)-1);
+  if pf='' then result:=q else Result:=copy(q,1,pos(pf,q)-1);
+end;
+
+begin
+  GroupBox1.Caption:='Вопрос '+IntToStr(CurrentTest);
+  AElement:='';
+  for i:=0 to Length(Lbl)-1 do Lbl[i].Free;
+  for i:=0 to Length(Answer)-1 do Answer[i].Free;
+  for i:=0 to Length(Image)-1 do Image[i].Free;
+  SetLength(Lbl,0);  SetLength(Answer,0);SetLength(Image,0);
+  if (CurrentTest>=0) and (CurrentTest<Length(Test)) then begin
+    SetLength(Lbl,length(Test[CurrentTest].L));
+    for i:=0 to length(Test[CurrentTest].L)-1 do begin
+       t:=Test[CurrentTest].L[i];
+       Lbl[i]:=TLabel.Create(Self);
+       Lbl[i].Parent:=GroupBox1;
+       Lbl[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Lbl[i].Caption:=ReadProperty(' Caption="','"',t);
+       Lbl[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Lbl[i].Font.Size:=StrToInt(ReadProperty(' FontCharset=',' ',t));
+       Lbl[i].Font.Color:=StrToInt(ReadProperty(' FontColor=',' ',t));
+       Lbl[i].Font.Size:=StrToInt(ReadProperty(' FontSize=',' ',t));
+       Lbl[i].Font.Name:=ReadProperty(' FontName="','"',t);
+       Lbl[i].Font.Style:=[];
+       if pos('fsBold',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsBold];
+       if pos('fsItalic',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsItalic];
+       if pos('fsUnderline',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsUnderline];
+       if pos('fsStrikeOut',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsStrikeOut];
+       Lbl[i].OnClick:=@LabelClick;
+       Lbl[i].Tag:=i;
+       Lbl[i].PopupMenu:=PopupMenu1;
+    end;
+    SetLength(Image,Length(Test[CurrentTest].I));
+    for i:=0 to Length(Test[CurrentTest].I)-1 do begin
+       t:=Test[CurrentTest].I[i];
+       Image[i]:=TImage.Create(Self);
+       Image[i].Parent:=GroupBox1;
+       Image[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Image[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Image[i].Height:=StrToInt(ReadProperty(' Height=',' ',t));
+       Image[i].Width:=StrToInt(ReadProperty(' Width=',' ',t));
+       Image[i].Proportional:=true;
+       Image[i].OnClick:=@ImageClick;
+       Image[i].PopupMenu:=PopupMenu2;
+       Image[i].Tag:=i;
+       s:=TStringStream.Create(DecodeStringBase64(ReadProperty(' Picture=','',t)));
+       Image[i].Picture.Bitmap.LoadFromStream(s);
+       FreeAndNil(s);
+    end;
+    SetLength(Answer,length(Test[CurrentTest].A));
+    for i:=0 to length(Test[CurrentTest].A)-1 do begin
+       t:=Test[CurrentTest].A[i];
+       Answer[i]:=TCheckBox.Create(Self);
+       Answer[i].Parent:=GroupBox1;
+       Answer[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Answer[i].Caption:=ReadProperty(' Caption="','"',t);
+       Answer[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Answer[i].Font.Size:=StrToInt(ReadProperty(' FontCharset=',' ',t));
+       Answer[i].Font.Color:=StrToInt(ReadProperty(' FontColor=',' ',t));
+       Answer[i].Font.Size:=StrToInt(ReadProperty(' FontSize=',' ',t));
+       Answer[i].Font.Name:=ReadProperty(' FontName="','"',t);
+       Answer[i].Font.Style:=[];
+       if pos('fsBold',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsBold];
+       if pos('fsItalic',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsItalic];
+       if pos('fsUnderline',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsUnderline];
+       if pos('fsStrikeOut',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsStrikeOut];
+       if ReadProperty(' Checked=',' ',t)='1' then Answer[i].Checked:=true else Answer[i].Checked:=false;
+       Answer[i].OnClick:=@AnswerClick;
+       Answer[i].Tag:=i;
+       Answer[i].PopupMenu:=PopupMenu3;
+    end;
+  end;
+end;
+
+end.
+

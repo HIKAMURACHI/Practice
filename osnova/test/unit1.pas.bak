@@ -1,0 +1,264 @@
+unit Unit1;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
+  ExtCtrls, Buttons, StdCtrls, Base64;
+
+type
+
+  { TForm1 }
+
+  TForm1 = class(TForm)
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    BitBtn3: TBitBtn;
+    GroupBox1: TGroupBox;
+    MainMenu1: TMainMenu;
+    Memo1: TMemo;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    Panel1: TPanel;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn3Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure MenuItem1Click(Sender: TObject);
+    procedure MenuItem2Click(Sender: TObject);
+    procedure ShowVopr;
+  private
+    { private declarations }
+  public
+    { public declarations }
+  end;
+
+type TestForm=record
+   L,I,A:array of string;
+end;
+var
+  Form1: TForm1;
+  Lbl:array of TLabel;
+  Image:array of TImage;
+  Answer:array of TCheckBox;
+  Test:array of TestForm;
+  Prt:array of array of boolean;
+  CurrentTest:integer=0;
+
+
+implementation
+
+{$R *.lfm}
+
+{ TForm1 }
+
+function ReadProperty(ps,pf:string;q:string):string;
+begin
+  delete(q,1,pos(ps,q)+length(ps)-1);
+  if pf='' then result:=q else Result:=copy(q,1,pos(pf,q)-1);
+end;
+
+
+procedure TForm1.MenuItem2Click(Sender: TObject);
+begin
+  if QuestionDlg ('Внимание','Вы действительно хотите выйти?',mtCustom,[mrYes,'Да', mrNo, 'Нет', 'IsDefault'],'')=mrYes
+    then Application.Terminate;
+end;
+
+procedure TForm1.MenuItem1Click(Sender: TObject);
+var
+  f:Text;
+  i,j,k,l,m,n,o:integer;
+  s:string;
+  t:TestForm;
+begin
+  if OpenDialog1.Execute then begin
+     AssignFile(f,OpenDialog1.FileName);
+     reset(f);
+     i:=0;
+     SetLength(Test,0);
+     SetLength(Prt,0);
+     while not eof(f) do begin
+        readln(f,s);
+        if s='#TestPage#' then begin i:=i+1; SetLength(Test,i);SetLength(Prt,i);end;
+        case copy(s,1,pos(':',s)) of
+          'Label:':begin
+                     SetLength(Test[i-1].L,Length(Test[i-1].L)+1);
+                     Test[i-1].L[Length(Test[i-1].L)-1]:=s;
+                   end;
+          'Image:':begin
+                     SetLength(Test[i-1].I,Length(Test[i-1].I)+1);
+                     Test[i-1].I[Length(Test[i-1].I)-1]:=s;
+                   end;
+          'Answer:':begin
+                     SetLength(Test[i-1].A,Length(Test[i-1].A)+1);
+                     Test[i-1].A[Length(Test[i-1].A)-1]:=s;
+                   end;
+        end;
+     end;
+     CloseFile(f);
+     CurrentTest:=0;
+     for i:=0 to Length(Test)*2 do begin
+       j:=Random(Length(Test));
+       k:=Random(Length(Test));
+       //переставляем местами только вопросы, имеющие варианты ответов
+       if (Length(Test[j].A)>0) and (Length(Test[k].A)>0) then begin
+         t:=Test[j];
+         Test[j]:=Test[k];
+         Test[k]:=t;
+         l:=Length(Test[j].A);
+         for o:=0 to Length(Test[j].A) do begin
+           m:=Random(l);n:=Random(l);
+           s:=Test[j].A[m];
+           Test[j].A[m]:=Test[j].A[n];
+           Test[j].A[n]:=s;
+         end;
+{         for o:=0 to Length(Test[k].A) do begin
+           t:=Test[k];
+           l:=Length(Test[k].A);
+           m:=Random(l);n:=Random(l);
+           Test[k].A[m]:=Test[k].A[n];
+           Test[k].A[n]:=t.A[k];
+         end;}
+       end;
+     end;
+     for i:=0 to Length(Test)-1 do begin
+        l:=Length(Test[i].A);
+        SetLength(Prt[i],l);
+        for j:=0 to l-1 do Prt[i,j]:=false;
+     end;
+     GroupBox1.Visible:=true;
+     Panel1.Visible:=true;
+     ShowVopr;
+  end;
+end;
+
+procedure TForm1.BitBtn1Click(Sender: TObject);
+var
+  i:integer;
+begin
+  for i:=0 to length(Answer)-1 do  Prt[CurrentTest,i]:=Answer[i].Checked;
+  if CurrentTest>0 then CurrentTest:=CurrentTest-1 else ShowMessage('Это первый вопрос!');
+  ShowVopr;
+end;
+
+procedure TForm1.BitBtn2Click(Sender: TObject);
+var
+  i:integer;
+begin
+  for i:=0 to length(Answer)-1 do  Prt[CurrentTest,i]:=Answer[i].Checked;
+  if CurrentTest<Length(Test)-1 then CurrentTest:=CurrentTest+1 else ShowMessage('это последний вопрос!');
+  ShowVopr;
+end;
+
+procedure TForm1.BitBtn3Click(Sender: TObject);
+var
+  i,j,l,m:integer;
+  o:boolean;
+begin
+  for i:=0 to length(Answer)-1 do  Prt[CurrentTest,i]:=Answer[i].Checked;
+  l:=0;
+  m:=0;
+  for i:=0 to Length(Test)-1 do  begin
+    o:=true;
+    for j:=0 to Length(Test[i].A)-1 do
+     if strtoint(ReadProperty(' Checked=',' ',Test[i].A[j]))<>ord(Prt[i,j]) then
+       begin
+          o:=false;
+          break;
+       end;
+     if o then l:=l+1 else m:=m+1;
+  end;
+  Panel1.Visible:=false;
+  GroupBox1.Visible:=false;
+  Memo1.Visible:=true;
+  MenuItem1.Enabled:=false;
+  Memo1.Clear;
+  Memo1.Lines.Add('        Всего вопросов:'+IntToStr(l+m));
+  Memo1.Lines.Add('        из них : правильных ответов:'+IntToStr(l));
+  Memo1.Lines.Add('                 не верных ответов:'+IntToStr(m));
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Memo1.Visible:=false;
+  GroupBox1.Visible:=false;
+  Panel1.Visible:=false;
+  Randomize;
+end;
+
+
+
+procedure TForm1.ShowVopr;
+var
+  i,j,k:integer;
+  s:TStringStream;
+  t:string;
+
+begin
+  GroupBox1.Caption:='Вопрос '+IntToStr(CurrentTest+1);
+  for i:=0 to Length(Lbl)-1 do Lbl[i].Free;
+  for i:=0 to Length(Answer)-1 do Answer[i].Free;
+  for i:=0 to Length(Image)-1 do Image[i].Free;
+  SetLength(Lbl,0);SetLength(Answer,0);SetLength(Image,0);
+  if (CurrentTest>=0) and (CurrentTest<Length(Test)) then begin
+    SetLength(Lbl,length(Test[CurrentTest].L));
+    for i:=0 to length(Test[CurrentTest].L)-1 do begin
+       t:=Test[CurrentTest].L[i];
+       Lbl[i]:=TLabel.Create(Self);
+       Lbl[i].Parent:=GroupBox1;
+       Lbl[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Lbl[i].Caption:=ReadProperty(' Caption="','"',t);
+       Lbl[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Lbl[i].Font.Size:=StrToInt(ReadProperty(' FontCharset=',' ',t));
+       Lbl[i].Font.Color:=StrToInt(ReadProperty(' FontColor=',' ',t));
+       Lbl[i].Font.Size:=StrToInt(ReadProperty(' FontSize=',' ',t));
+       Lbl[i].Font.Name:=ReadProperty(' FontName="','"',t);
+       Lbl[i].Font.Style:=[];
+       if pos('fsBold',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsBold];
+       if pos('fsItalic',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsItalic];
+       if pos('fsUnderline',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsUnderline];
+       if pos('fsStrikeOut',ReadProperty(' FontStyle=',' ',t))>0 then Lbl[i].Font.Style:=Lbl[i].Font.Style+[fsStrikeOut];
+    end;
+    SetLength(Image,Length(Test[CurrentTest].I));
+    for i:=0 to Length(Test[CurrentTest].I)-1 do begin
+       t:=Test[CurrentTest].I[i];
+       Image[i]:=TImage.Create(Self);
+       Image[i].Parent:=GroupBox1;
+       Image[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Image[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Image[i].Height:=StrToInt(ReadProperty(' Height=',' ',t));
+       Image[i].Width:=StrToInt(ReadProperty(' Width=',' ',t));
+       Image[i].Proportional:=true;
+       s:=TStringStream.Create(DecodeStringBase64(ReadProperty(' Picture=','',t)));
+       Image[i].Picture.Bitmap.LoadFromStream(s);
+       FreeAndNil(s);
+    end;
+    SetLength(Answer,length(Test[CurrentTest].A));
+    for i:=0 to length(Test[CurrentTest].A)-1 do begin
+       t:=Test[CurrentTest].A[i];
+       Answer[i]:=TCheckBox.Create(Self);
+       Answer[i].Parent:=GroupBox1;
+       Answer[i].Top:=StrToInt(ReadProperty('Top=',' ',t));
+       Answer[i].Caption:=ReadProperty(' Caption="','"',t);
+       Answer[i].Left:=StrToInt(ReadProperty(' Left=',' ',t));
+       Answer[i].Font.Size:=StrToInt(ReadProperty(' FontCharset=',' ',t));
+       Answer[i].Font.Color:=StrToInt(ReadProperty(' FontColor=',' ',t));
+       Answer[i].Font.Size:=StrToInt(ReadProperty(' FontSize=',' ',t));
+       Answer[i].Font.Name:=ReadProperty(' FontName="','"',t);
+       Answer[i].Font.Style:=[];
+       if pos('fsBold',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsBold];
+       if pos('fsItalic',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsItalic];
+       if pos('fsUnderline',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsUnderline];
+       if pos('fsStrikeOut',ReadProperty(' FontStyle=',' ',t))>0 then Answer[i].Font.Style:=Answer[i].Font.Style+[fsStrikeOut];
+       Answer[i].Checked:=Prt[CurrentTest,i];
+    end;
+  end;
+end;
+
+
+end.
+
